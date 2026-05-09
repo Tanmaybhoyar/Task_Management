@@ -11,12 +11,16 @@ const taskRoutes = require("./routes/taskRoutes");
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "https://task-production-8d25.up.railway.app",
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: "https://task-production-8d25.up.railway.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 
