@@ -5,12 +5,17 @@ console.log("DATABASE_URL =", process.env.DATABASE_URL);
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: "mysql",
-  logging: false,
+  logging: console.log,
 });
 
-sequelize
-  .authenticate()
-  .then(() => console.log("✅ Database connected"))
-  .catch((err) => console.log("❌ DB Error:", err));
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("✅ Database connected successfully");
+  } catch (error) {
+    console.error("❌ FULL DATABASE ERROR:");
+    console.error(error);
+  }
+})();
 
 module.exports = sequelize;
