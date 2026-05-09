@@ -26,3 +26,6 @@ sequelize.sync({ alter: true }).then(() => {
     console.log(`Server running on port ${process.env.PORT}`);
   });
 });
+app.get("/", (req, res) => {
+  res.send("Backend Running");
+});
