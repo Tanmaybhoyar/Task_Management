@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -15,17 +14,27 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Backend Running");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 
-sequelize.sync({ alter: true }).then(() => {
-  console.log("Database synced");
+sequelize.authenticate()
+  .then(() => {
+    console.log("Database connected");
 
-  app.listen(process.env.PORT, () => {
-    console.log(`Server running on port ${process.env.PORT}`);
+    return sequelize.sync();
+  })
+  .then(() => {
+    console.log("Database synced");
+
+    app.listen(process.env.PORT || 5000, () => {
+      console.log(`Server running on port ${process.env.PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Startup Error:", err);
   });
-});
-app.get("/", (req, res) => {
-  res.send("Backend Running");
-});
