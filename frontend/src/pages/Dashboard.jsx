@@ -24,6 +24,7 @@ export default function Dashboard() {
     fetchTasks();
   }, []);
 
+  // FETCH PROJECTS
   const fetchProjects = async () => {
     try {
       const res = await API.get("/projects");
@@ -33,6 +34,7 @@ export default function Dashboard() {
     }
   };
 
+  // FETCH TASKS
   const fetchTasks = async () => {
     try {
       const res = await API.get("/tasks");
@@ -42,11 +44,23 @@ export default function Dashboard() {
     }
   };
 
+  // CREATE PROJECT
   const createProject = async (e) => {
     e.preventDefault();
 
+    if (
+      !projectForm.title.trim() ||
+      !projectForm.description.trim()
+    ) {
+      alert("Please fill all project fields");
+      return;
+    }
+
     try {
-      await API.post("/projects", projectForm);
+      await API.post("/projects", {
+        title: projectForm.title,
+        description: projectForm.description,
+      });
 
       setProjectForm({
         title: "",
@@ -55,27 +69,38 @@ export default function Dashboard() {
 
       fetchProjects();
 
-      alert("Project Created");
+      alert("Project Created Successfully");
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+      alert("Failed to create project");
+    }
+  };
+
+  // DELETE PROJECT
+  const deleteProject = async (id) => {
+    try {
+      await API.delete(`/projects/${id}`);
+
+      fetchProjects();
+
+      alert("Project Deleted");
     } catch (error) {
       console.log(error);
     }
   };
 
-   const deleteProject = async (id) => {
-  try {
-    await API.delete(`/projects/${id}`);
-
-    fetchProjects();
-
-    alert("Project Deleted");
-  } catch (error) {
-    console.log(error);
-  }
-};
- 
-
+  // CREATE TASK
   const createTask = async (e) => {
     e.preventDefault();
+
+    if (
+      !taskForm.title.trim() ||
+      !taskForm.description.trim() ||
+      !taskForm.projectId
+    ) {
+      alert("Please fill all task fields");
+      return;
+    }
 
     try {
       await API.post("/tasks", {
@@ -100,14 +125,13 @@ export default function Dashboard() {
 
       alert("Task Created");
     } catch (error) {
-      console.log(error);
+      console.log(error.response?.data || error.message);
+      alert("Failed to create task");
     }
   };
 
-  const updateTaskStatus = async (
-    id,
-    status
-  ) => {
+  // UPDATE TASK STATUS
+  const updateTaskStatus = async (id, status) => {
     try {
       await API.put(`/tasks/${id}`, {
         status,
@@ -120,14 +144,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]text-white">
-      {/* SIDEBAR + CONTENT */}
-
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       <div className="flex">
         {/* SIDEBAR */}
 
         <div className="w-[260px] min-h-screen bg-black border-r border-gray-800 p-8 hidden md:block">
-          <h1 className="text-3xl font-bold text-white tracking-widest mb-14">
+          <h1 className="text-3xl font-bold tracking-widest mb-14">
             Task Manager
           </h1>
 
@@ -136,19 +158,19 @@ export default function Dashboard() {
               Dashboard
             </div>
 
-            <div className="hover:text-white transition cursor-pointer text-white">
+            <div className="hover:text-white transition cursor-pointer">
               Projects
             </div>
 
-            <div className="hover:text-white transition cursor-pointer text-white">
+            <div className="hover:text-white transition cursor-pointer">
               Tasks
             </div>
 
-            <div className="hover:text-white transition cursor-pointer text-white">
+            <div className="hover:text-white transition cursor-pointer">
               Analytics
             </div>
 
-            <div className="hover:text-white transition cursor-pointer text-white">
+            <div className="hover:text-white transition cursor-pointer">
               Team
             </div>
           </div>
@@ -175,7 +197,7 @@ export default function Dashboard() {
                 Dashboard Overview
               </h2>
 
-              <p className="text-black-500 mt-2">
+              <p className="text-gray-400 mt-2">
                 Manage your projects and tasks
               </p>
             </div>
@@ -184,7 +206,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 placeholder="Search..."
-                className="bg-[#111] border border-gray-800 px-5 py-3 rounded-xl outline-none w-[300px]"
+                className="bg-[#111] border border-gray-800 px-5 py-3 rounded-xl outline-none w-[300px] text-white"
               />
             </div>
           </div>
@@ -192,8 +214,8 @@ export default function Dashboard() {
           {/* STATS */}
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div className="bg-black text-white p-6 rounded-3xl">
-              <p className="text-white font-medium">
+            <div className="bg-black p-6 rounded-3xl">
+              <p className="font-medium text-gray-300">
                 Total Tasks
               </p>
 
@@ -202,42 +224,40 @@ export default function Dashboard() {
               </h2>
             </div>
 
-            <div className="bg-black text-white p-6 rounded-3xl">
-              <p className="text-white font-medium">
+            <div className="bg-black p-6 rounded-3xl">
+              <p className="font-medium text-gray-300">
                 Completed
               </p>
 
-              <h2 className="text-6xl font-semibold tracking-tight mt-3">
+              <h2 className="text-5xl font-bold mt-3">
                 {
                   tasks.filter(
-                    (t) =>
-                      t.status === "completed"
+                    (t) => t.status === "completed"
                   ).length
                 }
               </h2>
             </div>
 
-            <div className="bg-black text-white p-6 rounded-3xl">
-              <p className="text-white font-medium">
+            <div className="bg-black p-6 rounded-3xl">
+              <p className="font-medium text-gray-300">
                 Pending
               </p>
 
-              <h2 className="text-6xl font-semibold tracking-tight mt-3">
+              <h2 className="text-5xl font-bold mt-3">
                 {
                   tasks.filter(
-                    (t) =>
-                      t.status !== "completed"
+                    (t) => t.status !== "completed"
                   ).length
                 }
               </h2>
             </div>
 
-            <div className="bg-black text-white p-6 rounded-3xl">
-              <p className="text-white font-medium">
+            <div className="bg-black p-6 rounded-3xl">
+              <p className="font-medium text-gray-300">
                 Projects
               </p>
 
-              <h2 className="text-6xl font-semibold tracking-tight mt-3">
+              <h2 className="text-5xl font-bold mt-3">
                 {projects.length}
               </h2>
             </div>
@@ -260,7 +280,7 @@ export default function Dashboard() {
                 <input
                   type="text"
                   placeholder="Project Title"
-                  className="w-full bg-black border  p-4 rounded-2xl outline-none focus:border-white  text-white"
+                  className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none focus:border-white text-white"
                   value={projectForm.title}
                   onChange={(e) =>
                     setProjectForm({
@@ -273,20 +293,20 @@ export default function Dashboard() {
                 <textarea
                   placeholder="Project Description"
                   rows="5"
-                  className="w-full bg-black border  p-4 rounded-2xl outline-none focus:border-white"
-                  value={
-                    projectForm.description
-                  }
+                  className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none focus:border-white text-white resize-none"
+                  value={projectForm.description}
                   onChange={(e) =>
                     setProjectForm({
                       ...projectForm,
-                      description:
-                        e.target.value,
+                      description: e.target.value,
                     })
                   }
                 />
 
-                <button className="w-full bg-white text-black py-4 rounded-2xl font-bold hover:bg-gray-200 transition">
+                <button
+                  type="submit"
+                  className="w-full bg-white text-black py-4 rounded-2xl font-bold hover:bg-gray-200 transition"
+                >
                   Create Project
                 </button>
               </div>
@@ -296,7 +316,7 @@ export default function Dashboard() {
 
             <form
               onSubmit={createTask}
-              className="bg-[#111] border  rounded-3xl p-8"
+              className="bg-[#111] border border-gray-800 rounded-3xl p-8"
             >
               <h2 className="text-3xl font-bold mb-8">
                 Assign Task
@@ -306,7 +326,7 @@ export default function Dashboard() {
                 <input
                   type="text"
                   placeholder="Task Title"
-                  className="w-full bg-black border  p-4 rounded-2xl outline-none focus:border-white  text-white"
+                  className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none focus:border-white text-white"
                   value={taskForm.title}
                   onChange={(e) =>
                     setTaskForm({
@@ -319,27 +339,23 @@ export default function Dashboard() {
                 <textarea
                   placeholder="Task Description"
                   rows="4"
-                  className="w-full bg-black border  p-4 rounded-2xl outline-none focus:border-white"
-                  value={
-                    taskForm.description
-                  }
+                  className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none focus:border-white text-white resize-none"
+                  value={taskForm.description}
                   onChange={(e) =>
                     setTaskForm({
                       ...taskForm,
-                      description:
-                        e.target.value,
+                      description: e.target.value,
                     })
                   }
                 />
 
                 <select
-                  className="w-full bg-black border  p-4 rounded-2xl outline-none"
+                  className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none text-white"
                   value={taskForm.priority}
                   onChange={(e) =>
                     setTaskForm({
                       ...taskForm,
-                      priority:
-                        e.target.value,
+                      priority: e.target.value,
                     })
                   }
                 >
@@ -358,25 +374,23 @@ export default function Dashboard() {
 
                 <input
                   type="date"
-                  className="w-full bg-black border  p-4 rounded-2xl outline-none"
+                  className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none text-white"
                   value={taskForm.dueDate}
                   onChange={(e) =>
                     setTaskForm({
                       ...taskForm,
-                      dueDate:
-                        e.target.value,
+                      dueDate: e.target.value,
                     })
                   }
                 />
 
                 <select
-                  className="w-full bg-black border  p-4 rounded-2xl outline-none"
+                  className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none text-white"
                   value={taskForm.projectId}
                   onChange={(e) =>
                     setTaskForm({
                       ...taskForm,
-                      projectId:
-                        e.target.value,
+                      projectId: e.target.value,
                     })
                   }
                 >
@@ -394,7 +408,10 @@ export default function Dashboard() {
                   ))}
                 </select>
 
-                <button className="w-full bg-white text-black py-4 rounded-2xl font-bold hover:bg-gray-200 transition">
+                <button
+                  type="submit"
+                  className="w-full bg-white text-black py-4 rounded-2xl font-bold hover:bg-gray-200 transition"
+                >
                   Assign Task
                 </button>
               </div>
@@ -417,28 +434,28 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {projects.map((project) => (
                 <div
-  key={project.id}
-  className="bg-[#111] border border-gray-800 p-6 hover:border-white transition rounded-none"
->
-  <div className="flex items-start justify-between mb-4">
-    <h3 className="text-xl font-semibold tracking-tight">
-      {project.title}
-    </h3>
+                  key={project.id}
+                  className="bg-[#111] border border-gray-800 p-6 rounded-3xl hover:border-white transition"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-xl font-semibold">
+                      {project.title}
+                    </h3>
 
-    <button
-      onClick={() =>
-        deleteProject(project.id)
-      }
-      className="text-xs border border-red-500 text-red-500 px-3 py-1 hover:bg-red-500 hover:text-white transition uppercase tracking-wide"
-    >
-      Delete
-    </button>
-  </div>
+                    <button
+                      onClick={() =>
+                        deleteProject(project.id)
+                      }
+                      className="text-xs border border-red-500 text-red-500 px-3 py-1 rounded-lg hover:bg-red-500 hover:text-white transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
 
-  <p className="text-gray-500 leading-7">
-    {project.description}
-  </p>
-</div>
+                  <p className="text-gray-400 leading-7">
+                    {project.description}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
@@ -472,7 +489,7 @@ export default function Dashboard() {
                     </span>
                   </div>
 
-                  <p className="text-gray-500 mb-6 leading-7">
+                  <p className="text-gray-400 mb-6 leading-7">
                     {task.description}
                   </p>
 
@@ -482,9 +499,7 @@ export default function Dashboard() {
                         Status
                       </span>
 
-                      <span>
-                        {task.status}
-                      </span>
+                      <span>{task.status}</span>
                     </div>
 
                     <div className="flex justify-between">
@@ -503,7 +518,7 @@ export default function Dashboard() {
                   </div>
 
                   <select
-                    className="w-full bg-black border p-4 rounded-2xl outline-none text-white"
+                    className="w-full bg-black border border-gray-700 p-4 rounded-2xl outline-none text-white"
                     value={task.status}
                     onChange={(e) =>
                       updateTaskStatus(
